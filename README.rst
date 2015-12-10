@@ -30,22 +30,30 @@ Import the lib::
 
 Define gaze points as pointlists::
 
-    >>> saccace_points = [[0,0], [0,0], [1,1], [2,2], [2,2]]
-    >>> fixation_points = [[1,1], [1,1], [1,1], [1,1], [1,1]]
-    >>> unknown_points = [[1,1], [2,2], [0,0], [4,4], [1,1]]
+    >>> g1 = [[0,0], [0,0], [1,1], [2,2], [2,2]]  # a saccade
+    >>> g2 = [[1,1], [1,1], [1,1], [1,1], [1,1]]  # a fixation
+    >>> g3 = [[1,1], [2,2], [0,0], [4,4], [1,1]]  # an unknown
 
-Let the ``classify`` method to decide::
+Let the ``predict`` method to classify the pointlists. It uses the default pretrained classifier::
 
-    >>> r = gaze.classify(saccade_points)
+    >>> gaze.predict(g1)
     'saccade'
-    >>> gaze.classify(fixation_points)
+    >>> gaze.predict(g2)
     'fixation'
-    >>> gaze.classify(unknown_points)
+    >>> gaze.predict(g3)
     'unknown'
 
-Further details are given by ``analyze``::
+Internally, ``predict`` first extracts features from pointlists before classification. The features can be extracted explicitly with ``extract_features`` and ``extract_raw_features``::
 
-    >>> gaze.analyze(saccade_points)
+    >>> gaze.extract_features(g1)
+    {
+      'saccade_reaction': 1,
+      'saccade_duration': 3,
+      'saccade_mse': 0.000623,
+      'fixation_mse': 0.232406
+    }
+
+    >>> gaze.extract_raw_features(g1)
     {
       'saccade': {
         'source_points': [[0,0]],
@@ -58,22 +66,32 @@ Further details are given by ``analyze``::
       }
     }
 
+As an alternative for using the default pretrained classifier, you can train one::
+
+    >>> training_data = [g1, g2, g3]
+    >>> classes = ['saccade', 'fixation', 'unknown']
+    >>> gc = gaze.GazeClassifier()
+    >>> gc.fit(training_data, classes)
+
+The trained classifier has same API as the default::
+
+    >>> gc.predict(g1)
+    'saccade'
+
 
 
 3. API
 ======
 
-3.1. gazeclassifier.classify(pointlist, threshold=0.5)
-------------------------------------------------------
+3.1. gazeclassifier.predict(pointlist)
+--------------------------------------
 
 Parameters:
 
--  pointlist: a list of [x, y] points i.e. a list of lists
-   - OR alternatively the result dict from ``analyze`` to prevent rerunning
-     the analysis.
--  threshold: a float in range [0, 1]
-   - 0.0 = do not classify to 'unknown' regardless how large the error
-   - 1.0 = classify to 'unknown' regardless how small the error
+-   pointlist: a list of [x, y] points i.e. a list of lists
+    - OR alternatively the result dict from ``extract_features``.
+      This is convenient if you need access to the features and want to
+      prevent ``predict`` to re-extract them.
 
 Return a string which can be one of the following:
 
@@ -82,8 +100,8 @@ Return a string which can be one of the following:
 - ``'unknown'``: gaze cannot be regarded as any of the above
 
 
-3.2. gazeclassifier.analyze(pointlist)
---------------------------------------
+3.2. gazeclassifier.extract_features(pointlist)
+-----------------------------------------------
 
 Parameters:
 
@@ -92,7 +110,29 @@ Parameters:
 Return a dict that contains mean error and details for each hypothesis. The dict can be fed into ``classify`` for classification.
 
 
-3.3. gazeclassifier.version
+3.3. gazeclassifier.extract_raw_features(pointlist)
+---------------------------------------------------
+
+Parameters:
+
+-  pointlist: a list of [x, y] points i.e. a list of lists
+
+Return a dict that contains mean error and details for each hypothesis. The dict can be fed into ``predict`` for classification.
+
+
+3.4. gazeclassifier.GazeClassifier()
+------------------------------------
+
+A new untrained classifier.
+
+3.5. gazeclassifier.GazeClassifier#fit(pointlists, classes)
+-----------------------------------------------------------
+
+3.6. gazeclassifier.GazeClassifier#predict(pointlist_or_features)
+-----------------------------------------------------------------
+
+
+3.7. gazeclassifier.version
 ---------------------------
 
 The current version string::

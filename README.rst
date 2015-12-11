@@ -17,7 +17,7 @@ With `pip
 
     $ pip install gazeclassifier
 
-Compatible with Python 2.6, 2.7, 3.1, 3.2, 3.3, 3.4, and 3.5.
+Compatible with Python 2.6, 2.7, 3.3, 3.4, and 3.5.
 
 
 
@@ -34,13 +34,14 @@ Define gaze points as pointlists::
     >>> g2 = [[1,1], [1,1], [1,1], [1,1], [1,1]]  # a fixation
     >>> g3 = [[1,1], [2,2], [0,0], [4,4], [1,1]]  # an unknown
 
-Let the ``predict`` method to classify the pointlists. It uses the default pretrained classifier::
+Create a classifier. It is already pretrained and therefore able to ``predict``::
 
-    >>> gaze.predict(g1)
+    >>> gc = gaze.GazeClassifier()
+    >>> gc.predict(g1)
     'saccade'
-    >>> gaze.predict(g2)
+    >>> gc.predict(g2)
     'fixation'
-    >>> gaze.predict(g3)
+    >>> gc.predict(g3)
     'unknown'
 
 Internally, ``predict`` first extracts features from pointlists before classification. The features can be extracted explicitly with ``extract_features`` and ``extract_raw_features``::
@@ -59,7 +60,8 @@ Internally, ``predict`` first extracts features from pointlists before classific
         'source_points': [[0,0]],
         'saccade_points': [[0,0], [1,1], [2,2]],
         'target_points': [[2,2]],
-        'mean_squared_error': 0.000623,
+        'mean_squared_error': 0.000623
+      },
       'fixation': {
         'centroid': [[1.0,1.0]]
         'mean_squared_error': 0.232406,
@@ -196,7 +198,7 @@ Follow `instructions to install pyenv
 
 or run comprehensive tests for multiple Python versions listed in ``tox.ini``::
 
-    $ pyenv local 2.6.9 2.7.10 3.1.5 3.2.6 3.3.6 3.4.3 3.5.0
+    $ pyenv local 2.6.9 2.7.10 3.3.6 3.4.3 3.5.0
     $ eval "$(pyenv init -)"
     $ pyenv rehash
     $ tox
